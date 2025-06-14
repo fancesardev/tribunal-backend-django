@@ -1,0 +1,22 @@
+# Byte-code files
+*.pyc
+__pycache__/
+
+# Database
+db.sqlite3
+
+# Virtual environment
+venv/
+.venv/
+env/
+.env/
+
+# IDE files
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Media files (if not using S3 etc.)
+# media/
