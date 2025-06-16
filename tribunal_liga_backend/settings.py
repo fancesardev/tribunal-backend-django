@@ -12,7 +12,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
-import dj_database_url # Añade esta línea
+import dj_database_url # Necesario para parsear la URL de la base de datos
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,10 +22,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-tivt!so00)cj*x4s)ys3on*lnltp&hjf1)mshbadqi7gr30m)9'
+# Se recomienda cargar SECRET_KEY desde una variable de entorno en producción.
+# Render generará una si usas 'generateValue: true' en render.yaml.
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-tivt!so00)cj*x4s)ys3on*lnltp&hjf1)mshbadqi7gr30m)9')
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DDEBUG = os.environ.get('DEBUG', 'True') == 'True' # True en desarrollo, False en producción
+DEBUG = os.environ.get('DEBUG', 'True') == 'True' # Corrección: DDEBUG -> DEBUG
+
 # Si DEBUG es False, entonces ALLOWED_HOSTS debe ser configurado.
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
@@ -41,14 +46,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'gestion_liga',  # <-- ¡Añade esta línea!
-    'rest_framework', # <-- ¡Añade esta línea!
-    'corsheaders',
+    'gestion_liga', # Tu aplicación personalizada
+    'rest_framework', # Django REST framework
+    'corsheaders', # Para gestionar CORS
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware', # Debe ir lo más arriba posible
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -66,6 +71,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug', # Añadido por defecto de Django 5.x
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -80,29 +86,16 @@ WSGI_APPLICATION = 'tribunal_liga_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# Configuración principal de la base de datos.
+# Usa dj_database_url para parsear la URL de la base de datos.
+# En Render, DATABASE_URL será provista por la integración con PostgreSQL.
+# Localmente, si DATABASE_URL no está definida, usará SQLite.
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL', 'sqlite:///db.sqlite3'), # Usar DATABASE_URL de Render o SQLite local
-        conn_max_age=600
-    ){
-        'ENGINE': 'django.db.backends.postgresq',
-        'NAME': 'liga_futbol_db'/ 'db.sqlite3',      # Nombre de tu base de datos en phpMyAdmin
-        'USER': 'root',                # Usuario por defecto de MySQL en XAMPP
-        'PASSWORD': '',                # Contraseña por defecto (vacía) para root en XAMPP
-        'HOST': 'localhost',           # Dirección del servidor MySQL (localhost)
-        'PORT': '3306',                # Puerto por defecto de MySQL
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-            'charset': 'utf8mb4',
-        },
-    }
+        default=os.environ.get('DATABASE_URL', 'sqlite:///db.sqlite3'),
+        conn_max_age=600 # Opcional: Reconexión de DB para evitar conexiones cerradas
+    )
 }
-
-# Configuración de base de datos para Render (PostgreSQL)
-# Render inyectará la URL de la base de datos en una variable de entorno DATABASE_URL
-DATABASE_URL = os.environ.get('DATABASE_URL')
-if DATABASE_URL:
-    DATABASES['default'] = dj_database_url.parse(DATABASE_URL)
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -138,11 +131,18 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # Nuevo: donde collectstatic reunirá los archivos
-STATICFILES_DIRS = [
-    # os.path.join(BASE_DIR, 'static'), # Si tienes una carpeta 'static' global para tu proyecto
-]
+STATIC_URL = '/static/'
+# STATIC_ROOT es el directorio donde 'collectstatic' recolectará los archivos estáticos para producción.
+# Render necesita esto para servir los archivos estáticos.
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# STATICFILES_DIRS es para directorios adicionales de archivos estáticos que no están en las apps.
+# Generalmente se usa si tienes una carpeta 'static' en la raíz de tu proyecto.
+# Si no la usas, puedes comentarla o eliminarla.
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'static'),
+# ]
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -151,11 +151,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Configuración de CORS para permitir solicitudes desde el frontend
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Si tu frontend de React corre en el puerto 3000 (el por defecto)
+    "http://localhost:3000",   # Tu frontend de React en desarrollo
     "http://127.0.0.1:3000",
-    # Puedes añadir más orígenes si tu frontend corre en otro lugar
-    # Por ejemplo:
-    # "http://tudominio.com",
+    # Agrega aquí la URL de tu frontend de Render (si tienes uno)
+    # Ejemplo: "https://tu-frontend-en-render.onrender.com",
 ]
-# Si quieres permitir todas las solicitudes (solo para desarrollo, NO para producción):
-# CORS_ALLOW_ALL_ORIGINS = True
+
+# Si necesitas permitir más orígenes, añádelos a la lista.
+# Para producción, NUNCA uses CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True # Solo para desarrollo, NO para producción.
