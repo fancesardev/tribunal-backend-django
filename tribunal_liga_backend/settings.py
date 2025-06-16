@@ -82,7 +82,7 @@ WSGI_APPLICATION = 'tribunal_liga_backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.postgresq',
         'NAME': 'liga_futbol_db'/ 'db.sqlite3',      # Nombre de tu base de datos en phpMyAdmin
         'USER': 'root',                # Usuario por defecto de MySQL en XAMPP
         'PASSWORD': '',                # Contraseña por defecto (vacía) para root en XAMPP
