@@ -4,21 +4,14 @@ services:
     name: tribunal-django-backend
     env: python
     buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput"
-    # CAMBIA ESTA LÍNEA (sustituye tribunal_backend_django por tribunal_liga_backend):
     startCommand: "gunicorn tribunal_liga_backend.wsgi:application --bind 0.0.0.0:$PORT"
     healthCheckPath: /admin/login/
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: tribunal_django_db
+          name: tribunal_django_db # Asegúrate que este nombre coincide EXACTAMENTE con el nombre de tu BD en Render
           property: connectionString
       - key: SECRET_KEY
         generateValue: true
       - key: WEB_CONCURRENCY
         value: 4
-  - type: pserv
-    name: tribunal_django_db
-    env: postgres
-    plan: free
-    databaseName: tribunal_db
-    ipAllowList: []
