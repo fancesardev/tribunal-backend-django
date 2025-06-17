@@ -4,7 +4,7 @@ services:
     name: tribunal-django-backend
     env: python
     buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput"
-    startCommand: startCommand: "python manage.py migrate && gunicorn tribunal_liga_backend.wsgi:application --bind 0.0.0.0:$PORT"
+    startCommand: "python manage.py migrate --noinput && gunicorn tribunal_liga_backend.wsgi:application --bind 0.0.0.0:$PORT"
     healthCheckPath: /admin/login/
     envVars:
       - key: DATABASE_URL
