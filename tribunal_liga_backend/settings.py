@@ -160,3 +160,4 @@ CORS_ALLOWED_ORIGINS = [
 # Si necesitas permitir más orígenes, añádelos a la lista.
 # Para producción, NUNCA uses CORS_ALLOW_ALL_ORIGINS = True
 # CORS_ALLOW_ALL_ORIGINS = True # Solo para desarrollo, NO para producción.
+# Esto es una prueba de actualizacion
