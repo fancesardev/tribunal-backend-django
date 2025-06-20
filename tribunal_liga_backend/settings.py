@@ -155,9 +155,12 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     # Agrega aquí la URL de tu frontend de Render (si tienes uno)
     # Ejemplo: "https://tu-frontend-en-render.onrender.com",
+    # Agrega aquí la URL de tu frontend de Render
+    "https://tribunal-frontend-react.onrender.com", # <--- ¡AÑADE ESTA LÍNEA!
 ]
 
 # Si necesitas permitir más orígenes, añádelos a la lista.
 # Para producción, NUNCA uses CORS_ALLOW_ALL_ORIGINS = True
 # CORS_ALLOW_ALL_ORIGINS = True # Solo para desarrollo, NO para producción.
-# Esto es una prueba de actualizacion
+# Esto es una prueba de actualizacion para saber si te funciona
+# no podemos hacer andar esto
